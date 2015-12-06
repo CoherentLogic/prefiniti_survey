@@ -17,10 +17,16 @@
 --    along with Prefiniti.  If not, see <http://www.gnu.org/licenses/>.
 --
 
-drop database if exists 'prefiniti';
-create database 'prefiniti';
+select 'Creating prefiniti database...' as ' ';
+
+drop database if exists prefiniti;
+create database prefiniti;
 
 use prefiniti;
+
+select ' ' as ' ';
+select 'Creating users table...' as ' ';
+select ' ' as ' ';
 
 --
 -- create users table
@@ -41,13 +47,15 @@ create table users (
        city varchar(255) not null default '',
        `state` char(2) not null default '',
        zip char(10) not null default '',
-       primary key ('id')   
+       primary key (id)   
 );             
+
+describe users;
 
 --
 -- populate standard users
 --
-lock tables 'users' write;
+lock tables users write;
 insert into users 
        (id,
        password_hash,
@@ -61,18 +69,26 @@ values ('admin',
        'Administrator');
 unlock tables;
 
+
 --
 -- create groups table
 --
+
+select ' ' as ' ';
+select 'Creating groups table...' as ' ';
+select ' ' as ' ';
+
 create table groups (
        id varchar(255) not null,
-       primary key ('id')
+       primary key (id)
 );
+
+describe groups;
 
 --
 -- populate standard groups
 --
-lock tables 'groups' write;
+lock tables groups write;
 insert into groups 
 values ('Site Admins'),
        ('Business Managers'),
@@ -95,35 +111,49 @@ unlock tables;
 -- 
 -- group_memberships table
 --
+
+select ' ' as ' ';
+select 'Creating group_memberships table...' as ' ';
+select ' ' as ' ';
+
 create table group_memberships (
        id varchar(255) not null,
        fk_user_id varchar(255) not null,
        fk_group_id varchar(255) not null,
-       primary key ('id')
+       primary key (id)
 );
+
+describe group_memberships;
 
 -- 
 -- populate standard memberships
 --
-lock tables 'group_memberships' write;
+lock tables group_memberships write;
 insert into group_memberships
-values (UUID(), 'admin', 'Site Admins', 1);
+values (UUID(), 'admin', 'Site Admins');
 unlock tables;
 
 --
 -- group_admins table
 --
+
+select ' ' as ' ';
+select 'Creating group_admins table...' as ' ';
+select ' ' as ' ';
+
 create table group_admins (
        id varchar(255) not null,
        fk_user_id varchar(255) not null,
        fk_group_id varchar(255) not null,
-       primary key ('id')
+       primary key (id)
 );
+
+describe group_admins;
 
 --
 -- make admin user an administrator of all groups
 --
-lock tables 'group_administrators' write;
+lock tables group_admins write;
 insert into group_admins
 values (UUID(), 'admin', 'Site Admins'),
        (UUID(), 'admin', 'Business Managers'),
@@ -142,3 +172,10 @@ values (UUID(), 'admin', 'Site Admins'),
        (UUID(), 'admin', 'Software Developers'),
        (UUID(), 'admin', 'Customers');
 unlock tables;
+
+grant all on prefiniti.* to prefiniti@'localhost' identified by 'prefiniti';
+flush privileges;
+
+select ' ' as ' ';
+
+show tables;
