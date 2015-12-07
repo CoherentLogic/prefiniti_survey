@@ -173,6 +173,33 @@ values (UUID(), 'admin', 'Site Admins'),
        (UUID(), 'admin', 'Customers');
 unlock tables;
 
+-- 
+-- set up sessions table
+--
+
+select ' ' as ' ';
+select 'Creating login_sessions table...' as ' ';
+select ' ' as ' ';
+
+create table login_sessions (
+       id varchar(255) not null,
+       cf_token varchar(255) not null default '',
+       ip_address varchar(255) not null default '',
+       user_agent varchar(255) not null default '',
+       username varchar(255) not null,
+       opened_timestamp datetime,
+       closed_timestamp datetime,
+       primary key(id)
+);
+
+-- 
+-- set up permissions
+--
+
+select ' ' as ' ';
+select 'Setting up database permissions...' as ' ';
+select ' ' as ' ';
+
 grant all on prefiniti.* to prefiniti@'localhost' identified by 'prefiniti';
 flush privileges;
 
