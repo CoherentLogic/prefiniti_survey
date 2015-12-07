@@ -35,6 +35,8 @@ create table users (
        id varchar(255) not null,
        email_address varchar(255) not null default '',
        password_hash varchar(255) not null,	
+       password_question varchar(255) not null default '',
+       password_answer varchar(255) not null default '',
        confirmation_id varchar(255) not null default '',
        enabled tinyint(3) not null default '0',
        sms_number varchar(255) not null default '',
