@@ -24,25 +24,45 @@ create database prefiniti;
 
 use prefiniti;
 
+--
+-- create apps table
+--
 select ' ' as ' ';
-select 'Creating users table...' as ' ';
+select 'Creating apps table...' as ' ';
 select ' ' as ' ';
+
+create table apps (
+       id varchar(255) not null,
+       app_name varchar(50) not null default '',
+       app_description varchar(255) not null default '',
+       vendor_name varchar(255) not null default '',
+       primary key (id)
+);
+
+describe apps;
 
 --
 -- create users table
 --
+
+select ' ' as ' ';
+select 'Creating users table...' as ' ';
+select ' ' as ' ';
+
 create table users (
        id varchar(255) not null,
        email_address varchar(255) not null default '',
        password_hash varchar(255) not null,	
        password_question varchar(255) not null default '',
        password_answer varchar(255) not null default '',
+       password_expired tinyint(3) not null default '0',
        confirmation_id varchar(255) not null default '',
-       enabled tinyint(3) not null default '0',
+       enabled tinyint(3) not null default '0',       
        sms_number varchar(255) not null default '',
        first_name varchar(50) not null default '',
        middle_initial char(1) not null default '',
        last_name varchar(50) not null default '',  
+       title varchar(50) not null default '',
        gender char(1) not null default '',
        phone varchar(45) not null default '',
        street_address varchar(255) not null default '',
@@ -63,12 +83,14 @@ insert into users
        password_hash,
        enabled,
        first_name,
-       last_name)
+       last_name,
+       title)
 values ('admin',
        SHA1('password1234'),
        1,
        'Default',
-       'Administrator');
+       'Administrator',
+       'Built-in account');
 unlock tables;
 
 
@@ -185,12 +207,12 @@ select ' ' as ' ';
 
 create table login_sessions (
        id varchar(255) not null,
-       cf_token varchar(255) not null default '',
+       fk_user_id varchar(255) not null,
        ip_address varchar(255) not null default '',
-       user_agent varchar(255) not null default '',
-       username varchar(255) not null,
+       user_agent varchar(255) not null default '',       
        opened_timestamp datetime,
        closed_timestamp datetime,
+       authenticated tinyint(3) not null default '0',
        primary key(id)
 );
 

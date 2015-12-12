@@ -18,19 +18,34 @@
 
 <body class="gray-bg">
 
+  <cfif isDefined("url.logout")>
+    <cfset session.prefinitiSession.setAuthenticated(false)/>
+    <cfset session.prefinitiSession.user.setAuthenticated(false)/>
+  </cfif>
+
     <div class="middle-box text-center loginscreen animated fadeInDown">
         <div>
 
+	  <cfif isDefined("form.submit")>
+	    <cfset session.prefinitiSession.authenticate(form.username, form.password)/>
+	    <cfif session.prefinitiSession.getAuthenticated()>
+	      <cflocation url="/dashboards/default" addtoken="no">
+	    </cfif>
+	  </cfif>
+
             <h3>Welcome to Prefiniti</h3>
 
-            <form class="m-t" role="form" action="index.html">
+            <form class="m-t" role="form" action="login.cfm" method="post">
+	      <cfif isDefined("form.submit") AND NOT session.prefinitiSession.getAuthenticated()>
+		<div><cfoutput>#session.prefinitiSession.getAuthenticationMessage()#</cfoutput></div>
+	      </cfif>
                 <div class="form-group">
-                    <input type="email" class="form-control" placeholder="Username" required="">
+                    <input name="username" type="text" class="form-control" placeholder="Username" required="">
                 </div>
                 <div class="form-group">
-                    <input type="password" class="form-control" placeholder="Password" required="">
+                    <input name="password" type="password" class="form-control" placeholder="Password" required="">
                 </div>
-                <button type="submit" class="btn btn-primary block full-width m-b">Login</button>
+                <button type="submit" name="submit" class="btn btn-primary block full-width m-b">Login</button>
 
                 <a href="forgot_password.cfm"><small>Forgot password?</small></a>
                 <p class="text-muted text-center"><small>Do not have an account?</small></p>

@@ -1,15 +1,13 @@
-component name="prefiniti" output="true"
+component output="false"
 {
 
-    this = {
-	name: "prefiniti",
-	applicationTimeout: createTimeSpan(0, 1, 0, 0),
-	sessionManagement: true,
-	sessionTimeout: createTimeSpan(0, 0, 30, 0),
-	setClientCookies: true,
-	datasource: "prefiniti"
-    };
-    
+
+    this.name = "prefiniti";
+    this.applicationTimeout = createTimeSpan(0, 1, 0, 0);
+    this.sessionManagement = true;
+    this.sessionTimeout = createTimeSpan(0, 0, 30, 0);
+    this.setClientCookies = true;   
+
     public boolean function OnApplicationStart() {
 
         return true;
@@ -39,12 +37,16 @@ component name="prefiniti" output="true"
     }
 
     public void function OnSessionStart() {
-
+	session.datasource = "prefiniti";
+	session.prefinitiSession = new prefiniti.core.api.session(ID = session.sessionid,
+							 Username = "guest",
+							 IPAddress = CGI.REMOTE_ADDR,
+							 UserAgent = CGI.HTTP_USER_AGENT);
     }
 
     public void function OnSessionEnd(required struct SessionScope, struct ApplicationScope = structNew()) {
 
-	structClear(arguments.SessionScope);
+//	structClear(arguments.SessionScope);
 
     }
     
