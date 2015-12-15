@@ -54,10 +54,27 @@ create table app_event_types (
        fk_app_id varchar(255) not null,
        event_type varchar(255) not null,
        event_icon varchar(50) not null default 'fa-info-circle',
-       event_text varchar(255) not null,
-       foreign key(fk_app_id) references apps(id) on update cascade on delete restrict,
+       foreign key (fk_app_id) references apps(id) on update cascade on delete restrict,
        primary key (id)
 );
+
+--
+-- create app_events table
+--
+
+select ' ' as ' ';
+select 'Creating app_events table...' as '';
+select ' ' as ' ';
+
+create table app_events (
+       id varchar(255),
+       fk_app_event_type_id varchar(255) not null,
+       event_text varchar(255) not null,
+       foreign key (fk_app_event_type_id) references app_event_types(id) on update cascade on delete restrict,
+       primary key (id)
+);
+
+describe app_events;
 
 
 --

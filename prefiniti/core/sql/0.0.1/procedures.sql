@@ -118,7 +118,6 @@ end $$
 create procedure addEventType(in appID varchar(255), 
        		 	      in eventType varchar(255), 
 			      in eventIcon varchar(50), 
-			      in eventText varchar(255),
 			      out eventTypeID varchar(255),
 			      out eventsAdded int)
 begin
@@ -129,8 +128,8 @@ begin
 	if matchingApps > 0 then
 	   select UUID() into eventTypeID;	  
 
-	   insert into app_event_types (id, fk_app_id, event_type, event_text, event_icon)
-	   values (eventTypeID, appID, eventType, eventText, eventIcon);
+	   insert into app_event_types (id, fk_app_id, event_type, event_icon)
+	   values (eventTypeID, appID, eventType, eventIcon);
 
 	   select count(*) into eventsAdded from app_event_types where id=eventTypeID;	   
 
@@ -154,6 +153,24 @@ begin
 	else
 	   select 0 into eventTypesRemoved;
 	end if;
+end $$
+
+create procedure addEvent(in eventTypeID varchar(255), 
+       		 	  in eventText varchar(255),
+			  out eventID varchar(255),
+			  out eventsAdded int)
+begin
+	declare matchingEventTypes int;
+
+	select count(*) into matchingEventTypes from app_event_types where id=eventTypeID;
+	select UUID() into eventID;
+	      
+	if matchingEventTypes > 0 then
+	   insert into app_events (id, fk_app_event_type_id, event_text)
+	   values (eventID, eventTypeID, eventText);
+	end if
+
+	select count(*) into eventsAdded from app_events where id=eventID;
 end $$
 
 create procedure getAllUsers()
