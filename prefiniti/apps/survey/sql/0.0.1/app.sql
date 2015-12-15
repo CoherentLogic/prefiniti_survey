@@ -156,7 +156,7 @@ create table survey_workflows (
        primary key (id)
 );
 
-describe survey_project_workflows;
+describe survey_workflows;
 
 -- 
 -- create survey_workflow_steps table
@@ -203,14 +203,4 @@ select ' ' as ' ';
 select 'Populating apps table for survey app...' as ' ';
 select ' ' as ' ';
 
-lock table apps write;
-insert into apps
-       (id,
-       app_name,
-       app_description,
-       vendor_name)
-values ('survey',
-       'Survey',
-       'Survey project management application',
-       'Coherent Logic Development');
-unlock tables;
+call addApp('survey', 'Survey', 'Survey project management application', 'Coherent Logic Development');

@@ -1,5 +1,5 @@
 --
---    app.sql
+--    tables.sql
 --     
 --    This file is part of Prefiniti.
 --
@@ -42,6 +42,24 @@ create table apps (
 describe apps;
 
 --
+-- create app_event_types table
+--
+
+select ' ' as ' ';
+select 'Creating app_event_types table...' as ' ';
+select ' ' as ' ';
+
+create table app_event_types (
+       id varchar(255) not null,
+       fk_app_id varchar(255) not null,
+       event_type varchar(255) not null,
+       event_icon varchar(50) not null default 'fa-info-circle',
+       event_text varchar(255) not null,
+       primary key (id)
+);
+
+
+--
 -- create users table
 --
 
@@ -55,9 +73,9 @@ create table users (
        password_hash varchar(255) not null,	
        password_question varchar(255) not null default '',
        password_answer varchar(255) not null default '',
-       password_expired tinyint(3) not null default '0',
+       password_expired bool not null default false,
        confirmation_id varchar(255) not null default '',
-       enabled tinyint(3) not null default '0',       
+       enabled bool not null default false,       
        sms_number varchar(255) not null default '',
        first_name varchar(50) not null default '',
        middle_initial char(1) not null default '',
