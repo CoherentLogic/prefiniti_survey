@@ -57,14 +57,41 @@ begin
 
 end $$
 
+create procedure updateApp(in currentAppID varchar(255),
+       		 	   in newAppID varchar(255),
+       		 	   in appName varchar(50),
+			   in appDescription varchar(255),
+			   in vendorName varchar(255),
+			   out appsUpdated int)
+begin
+	declare matchingApps int;
+	declare conflictingApps int;
+
+	select count(*) into matchingApps from apps where id=currentAppID;
+	select count(*) into conflictingApps from apps where id=newAppID;
+
+	if matchingApps > 0 and conflictingApps = 0 then
+	   update apps
+	   set	  id=newAppId,
+	   	  app_name=appName,
+		  app_description=appDescription,
+		  vendor_name=vendorName
+	   where  id=currentAppID;
+	  
+	   select 1 into appsUpdated;
+	else
+	   select 0 into appsUpdated;
+	end if;
+end $$			   
+
 create procedure removeApp(in appID varchar(255), out appsRemoved int)
 begin
 	declare matchingApps int;
 	select count(*) into matchingApps from apps where id=appID;
 
 	if matchingApps > 0 then
-	   delete from apps where id=appID;
 	   delete from app_event_types where fk_app_id=appID;
+	   delete from apps where id=appID;
 
 	   select 1 into appsRemoved;
 	else
@@ -76,6 +103,12 @@ create procedure getAllEventTypes()
 begin
 	select * from app_event_types;
 end $$
+
+create procedure getEventType(eventTypeID varchar(255))
+begin
+	select * from app_event_types where id=eventTypeID;
+end $$
+
 
 create procedure getEventTypesByApp(in appID varchar(255))
 begin
@@ -108,6 +141,21 @@ begin
         end if;		
 end $$
 
+create procedure removeEventType(in eventTypeID varchar(255), out eventTypesRemoved int)
+begin
+	declare matchingEventTypes int;
+
+	select count(*) into matchingEventTypes from app_event_types where id=eventTypeID;
+
+	if matchingEventTypes > 0 then
+	   delete from app_event_types where id=eventTypeID;
+
+	   select 1 into eventTypesRemoved;
+	else
+	   select 0 into eventTypesRemoved;
+	end if;
+end $$
+
 create procedure getAllUsers()
 begin
 	select * from users;
@@ -116,6 +164,37 @@ end $$
 create procedure getUser(in userName varchar(255))
 begin
 	select * from users where id=userName;
+end $$
+
+create procedure addUserMinimal(in userName varchar(255),
+       		 		in password varchar(255),
+				in firstName varchar(50),
+				in lastName varchar(50),
+				in title varchar(50),
+				out confirmationID varchar(255),
+				out usersAdded int)
+begin
+	call addUser(userName,
+		     '',
+		     password,
+		     '',
+		     '',
+		     false,
+		     false,
+		     '',
+		     firstName,
+		     '',
+		     lastName,
+		     title,
+		     '',
+		     '',
+		     '',
+		     '',
+		     '',
+		     '',
+		     @confirmationID,
+		     @usersAdded);
+		     
 end $$
 
 create procedure addUser(in userName varchar(255),
@@ -156,7 +235,7 @@ begin
 			  	  password_question,
 				  password_answer,
 			  	  password_expired,
-			  	  confimration_id,
+			  	  confirmation_id,
 			 	  enabled,
 			  	  sms_number,
 			  	  first_name,
@@ -221,7 +300,7 @@ begin
 
 	select count(*) into matchingGroups from groups where id=groupName;
 
-	if matchingUsers = 0 then
+	if matchingGroups = 0 then
 	   insert into groups(id) values(groupName);
 	   select 1 into groupsAdded;
 	else
@@ -238,8 +317,8 @@ begin
 	select count(*) into matchingGroups from groups where id=groupName;
 
 	if matchingUsers > 0 then
-	   delete from groups where id=userName;
 	   delete from group_memberships where fk_group_id=groupName;
+	   delete from groups where id=userName;
 	   select 1 into groupsRemoved;
 	else
 	   select 0 into groupsRemoved;
@@ -284,4 +363,95 @@ begin
 	end if;
 end $$
 
+create procedure addAdminToGroup(in userName varchar(255), in groupName varchar(255), out adminsAdded int)
+begin
+	declare matchingGroups int;
+	declare matchingUsers int;
+	declare adminID varchar(255);
+
+	select count(*) into matchingGroups from groups where id=groupName;
+	select count(*) into matchingUsers from users where id=userName;
+	select UUID() into adminID;
+
+	if matchingGroups > 0 and matchingUsers > 0 then
+	   insert into group_admins(id, fk_user_id, fk_group_id)
+	   values (adminID, userName, groupName);
+
+	   select 1 into adminsAdded;
+	else
+	   select 0 into adminsAdded;
+	end if;
+end $$
+
+create procedure removeAdminFromGroup(in userName varchar(255), in groupName varchar(255), out adminsRemoved int)
+begin
+	declare matchingAdmins int;
+
+	select count(*) into matchingAdmins from group_admins
+	where fk_user_id=userName and fk_group_id=groupName;
+
+	if matchingAdmins > 0 then
+	   delete from group_admins where fk_user_id=userName and fk_group_id=groupName;
+	   select 1 into adminsRemoved;
+	else
+	   select 0 into adminsRemoved;
+	end if;
+end $$
+	   
+create procedure addLoginSession(in userName varchar(255),
+       		 		 in ipAddress varchar(255),
+				 in userAgent varchar(255),
+				 out sessionID varchar(255),
+				 out sessionsCreated int)
+begin
+	select UUID() into sessionID;
+
+	insert into login_sessions (id,
+	       	    		   fk_user_id,
+				   ip_address,
+				   user_agent,
+				   opened_timestamp)
+	values			   (sessionID,
+				   userName,
+				   ipAddress,
+				   userAgent,
+				   now());
+
+	select 1 into sessionsCreated;
+end $$
+
+create procedure authenticateLoginSession(in username varchar(255),
+       		 			  in password varchar(255),
+					  in sessionID varchar(255),
+					  out authenticationMessage varchar(255),
+					  out passwordExpired bool,				  
+					  out sessionsAuthenticated int)
+begin
+	declare matchingAccounts int;
+	declare accountEnabled bool;
+
+	select count(*) into matchingAccounts from users 
+	where id=username and password_hash=SHA1(password);
+
+	if matchingAccounts > 0 then
+	   select enabled into accountEnabled from users where id=username;
+	   select password_expired into passwordExpired from users where id=username;
+
+	   if accountEnabled = true then
+	      update login_sessions set authenticated=true where id=sessionID;
+
+	      select count(*) into sessionsAuthenticated from login_sessions
+	      where id=sessionID and authenticated=true;	     
+
+	      select 'Welcome to Prefiniti' into authenticationMessage;
+	   else
+	      select 'Account disabled' into authenticationMessage;
+	   end if;
+	else
+	   select false into passwordExpired;
+	   select 0 into sessionsAuthenticated;
+	   select 'Invalid username or password' into authenticationMessage;
+	end if;
+end $$
+				 
 show procedure status where db='prefiniti';

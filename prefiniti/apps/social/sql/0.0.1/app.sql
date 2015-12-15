@@ -39,4 +39,4 @@ select ' ' as ' ';
 select 'Populating apps table for social app...' as ' ';
 select ' ' as ' ';
 
-call addApp('social', 'Social Networking', 'Social Networking application', 'Coherent Logic Development');
+call addApp('social', 'Social Networking', 'Social Networking application', 'Coherent Logic Development', @appsAdded);

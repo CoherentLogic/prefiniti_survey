@@ -55,6 +55,7 @@ create table app_event_types (
        event_type varchar(255) not null,
        event_icon varchar(50) not null default 'fa-info-circle',
        event_text varchar(255) not null,
+       foreign key(fk_app_id) references apps(id) on update cascade on delete restrict,
        primary key (id)
 );
 
@@ -87,30 +88,11 @@ create table users (
        city varchar(255) not null default '',
        `state` char(2) not null default '',
        zip char(10) not null default '',
+       unique(email_address),
        primary key (id)   
 );             
 
 describe users;
-
---
--- populate standard users
---
-lock tables users write;
-insert into users 
-       (id,
-       password_hash,
-       enabled,
-       first_name,
-       last_name,
-       title)
-values ('admin',
-       SHA1('password1234'),
-       1,
-       'Default',
-       'Administrator',
-       'Built-in account');
-unlock tables;
-
 
 --
 -- create groups table
@@ -127,29 +109,6 @@ create table groups (
 
 describe groups;
 
---
--- populate standard groups
---
-lock tables groups write;
-insert into groups 
-values ('Site Admins'),
-       ('Business Managers'),
-       ('Financial Managers'),
-       ('Project Managers'),
-       ('Technical Managers'),
-       ('Surveyors'),
-       ('Party Chiefs'),
-       ('Field Assistants'),
-       ('Drafters'),
-       ('GIS Technicians'),
-       ('Legal'),
-       ('Financial'),
-       ('Marketing'),
-       ('Information Technology'),
-       ('Software Developers'),
-       ('Customers');
-unlock tables;
-
 -- 
 -- group_memberships table
 --
@@ -162,18 +121,13 @@ create table group_memberships (
        id varchar(255) not null,
        fk_user_id varchar(255) not null,
        fk_group_id varchar(255) not null,
+       foreign key (fk_user_id) references users(id) on update cascade on delete restrict,
+       foreign key (fk_group_id) references groups(id) on update cascade on delete restrict,
        primary key (id)
 );
 
 describe group_memberships;
 
--- 
--- populate standard memberships
---
-lock tables group_memberships write;
-insert into group_memberships
-values (UUID(), 'admin', 'Site Admins');
-unlock tables;
 
 --
 -- group_admins table
@@ -187,33 +141,12 @@ create table group_admins (
        id varchar(255) not null,
        fk_user_id varchar(255) not null,
        fk_group_id varchar(255) not null,
+       foreign key (fk_user_id) references users(id) on update cascade on delete restrict,
+       foreign key (fk_group_id) references groups(id) on update cascade on delete restrict,
        primary key (id)
 );
 
 describe group_admins;
-
---
--- make admin user an administrator of all groups
---
-lock tables group_admins write;
-insert into group_admins
-values (UUID(), 'admin', 'Site Admins'),
-       (UUID(), 'admin', 'Business Managers'),
-       (UUID(), 'admin', 'Financial Managers'),
-       (UUID(), 'admin', 'Project Managers'),
-       (UUID(), 'admin', 'Technical Managers'),
-       (UUID(), 'admin', 'Surveyors'),
-       (UUID(), 'admin', 'Party Chiefs'),
-       (UUID(), 'admin', 'Field Assistants'),
-       (UUID(), 'admin', 'Drafters'),
-       (UUID(), 'admin', 'GIS Technicians'),
-       (UUID(), 'admin', 'Legal'),
-       (UUID(), 'admin', 'Financial'),
-       (UUID(), 'admin', 'Marketing'),
-       (UUID(), 'admin', 'Information Technology'),
-       (UUID(), 'admin', 'Software Developers'),
-       (UUID(), 'admin', 'Customers');
-unlock tables;
 
 -- 
 -- set up sessions table
@@ -230,7 +163,8 @@ create table login_sessions (
        user_agent varchar(255) not null default '',       
        opened_timestamp datetime,
        closed_timestamp datetime,
-       authenticated tinyint(3) not null default '0',
+       authenticated bool not null default false,
+       foreign key (fk_user_id) references users(id) on update cascade on delete restrict,
        primary key(id)
 );
 

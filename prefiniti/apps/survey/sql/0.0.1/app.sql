@@ -203,4 +203,4 @@ select ' ' as ' ';
 select 'Populating apps table for survey app...' as ' ';
 select ' ' as ' ';
 
-call addApp('survey', 'Survey', 'Survey project management application', 'Coherent Logic Development');
+call addApp('survey', 'Survey', 'Survey project management application', 'Coherent Logic Development', @appsAdded);
